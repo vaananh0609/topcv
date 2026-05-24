@@ -21,7 +21,8 @@ on:
 
 jobs:
   crawl:
-    runs-on: ubuntu-latest
+    # Chạy trên laptop của bạn (self-hosted), tránh IP datacenter GitHub bị TopCV chặn.
+    runs-on: [self-hosted, Windows, X64]
     timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
@@ -29,15 +30,16 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-          cache: pip
 
       - name: Install dependencies
+        shell: pwsh
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          python -m playwright install chromium --with-deps
+          python -m playwright install chromium
 
       - name: Run crawler
+        shell: pwsh
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
           MONGODB_DB: ${{ secrets.MONGODB_DB }}
@@ -48,12 +50,15 @@ jobs:
           DELAY_TOPCV_MIN: "5"
           DELAY_TOPCV_MAX: "10"
         run: |
-          if [ -n "$TOPCV_PROXY_LIST" ]; then
-            printf "%s\n" "$TOPCV_PROXY_LIST" > proxies.txt
-            export PROXY_LIST_FILE="proxies.txt"
-          fi
-          ARGS="--max-pages ${{ github.event.inputs.max_pages || '0' }} --limit-jobs ${{ github.event.inputs.limit_jobs || '0' }}"
-          if [ "${{ github.event.inputs.no_detail }}" = "true" ]; then
-            ARGS="$ARGS --no-detail"
-          fi
-          python topcv-new.py $ARGS
+          if ($env:TOPCV_PROXY_LIST) {
+            $env:TOPCV_PROXY_LIST | Out-File -FilePath proxies.txt -Encoding utf8
+            $env:PROXY_LIST_FILE = "proxies.txt"
+          }
+          $args = @(
+            "--max-pages", "${{ github.event.inputs.max_pages || '0' }}"
+            "--limit-jobs", "${{ github.event.inputs.limit_jobs || '0' }}"
+          )
+          if ("${{ github.event.inputs.no_detail }}" -eq "true") {
+            $args += "--no-detail"
+          }
+          python topcv-new.py @args

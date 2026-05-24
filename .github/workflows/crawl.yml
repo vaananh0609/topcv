@@ -1,0 +1,52 @@
+name: TopCV Crawl
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_pages:
+        description: "Số trang list (0 = không giới hạn)"
+        required: false
+        default: "0"
+      limit_jobs:
+        description: "Giới hạn số job (0 = không giới hạn)"
+        required: false
+        default: "0"
+      no_detail:
+        description: "Chỉ crawl list, không vào trang chi tiết"
+        type: boolean
+        required: false
+        default: false
+  schedule:
+    - cron: "0 18 * * *"  # 01:00 VN (UTC+7) mỗi ngày
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python -m playwright install chromium --with-deps
+
+      - name: Run crawler
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGODB_DB: ${{ secrets.MONGODB_DB }}
+          TOPCV_USE_CURL_CFFI_FIRST: "true"
+          DELAY_TOPCV_MIN: "5"
+          DELAY_TOPCV_MAX: "10"
+        run: |
+          ARGS="--max-pages ${{ github.event.inputs.max_pages || '0' }} --limit-jobs ${{ github.event.inputs.limit_jobs || '0' }}"
+          if [ "${{ github.event.inputs.no_detail }}" = "true" ]; then
+            ARGS="$ARGS --no-detail"
+          fi
+          python topcv-new.py $ARGS

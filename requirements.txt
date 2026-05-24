@@ -1,0 +1,8 @@
+pymongo>=4.6.3
+python-dotenv>=1.0.1
+pydantic-settings>=2.1.0
+beautifulsoup4>=4.12.3
+lxml>=5.1.0,<6
+playwright>=1.40.0
+playwright-stealth>=1.0.6
+curl_cffi>=0.7.3

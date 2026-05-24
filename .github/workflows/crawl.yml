@@ -41,10 +41,17 @@ jobs:
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
           MONGODB_DB: ${{ secrets.MONGODB_DB }}
+          HTTP_PROXY: ${{ secrets.TOPCV_PROXY_URL }}
+          HTTPS_PROXY: ${{ secrets.TOPCV_PROXY_URL }}
+          TOPCV_PROXY_LIST: ${{ secrets.TOPCV_PROXY_LIST }}
           TOPCV_USE_CURL_CFFI_FIRST: "true"
           DELAY_TOPCV_MIN: "5"
           DELAY_TOPCV_MAX: "10"
         run: |
+          if [ -n "$TOPCV_PROXY_LIST" ]; then
+            printf "%s\n" "$TOPCV_PROXY_LIST" > proxies.txt
+            export PROXY_LIST_FILE="proxies.txt"
+          fi
           ARGS="--max-pages ${{ github.event.inputs.max_pages || '0' }} --limit-jobs ${{ github.event.inputs.limit_jobs || '0' }}"
           if [ "${{ github.event.inputs.no_detail }}" = "true" ]; then
             ARGS="$ARGS --no-detail"

@@ -10,8 +10,12 @@ Vào **Settings → Secrets and variables → Actions**, thêm:
 |--------|--------|
 | `MONGODB_URI` | Connection string MongoDB (Atlas) |
 | `MONGODB_DB` | Tên database (vd. `salary_crawler`) |
+| `TOPCV_PROXY_URL` | Tuỳ chọn: proxy dạng `http://user:pass@host:port` |
+| `TOPCV_PROXY_LIST` | Tuỳ chọn: nhiều proxy Webshare, mỗi dòng `host:port:user:pass` |
 
 **MongoDB Atlas:** Network Access → Allow access from anywhere (`0.0.0.0/0`) hoặc dùng IP cố định nếu có self-hosted runner.
+
+Nếu GitHub Actions bị TopCV chặn ngay trang list, hãy dùng `TOPCV_PROXY_URL` hoặc `TOPCV_PROXY_LIST` (ưu tiên proxy residential / ISP).
 
 ## Chạy trên GitHub Actions
 
